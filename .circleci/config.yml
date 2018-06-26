@@ -1,37 +1,73 @@
 version: 2
 jobs:
-  build:
+  prepare:
     docker:
-      - image: circleci/python:3.5
-    steps:
-      - checkout
+      - image: circleci/python:3.6
+        steps:
+          - checkout
+          - run:
+              name: Prepare reports directories
+              command: mkdir -p ~/test-results/{pytest,flake8}
 
-      - run:
-          name: Prepare reports directories
-          command: mkdir -p ~/.reports/{pytest,flake8}
+          # Download and cache dependencies
+          - restore_cache:
+              keys:
+              - v1-dependencies-{{ checksum "src/requirements.txt" }}
+              # fallback to using the latest cache if no exact match is found
+              - v1-dependencies-
 
-      # Download and cache dependencies
-      - restore_cache:
-          keys:
-          - v1-dependencies-{{ checksum "src/requirements.txt" }}
-          # fallback to using the latest cache if no exact match is found
-          - v1-dependencies-
+          - run: |
+              pip install -U pip setuptools tox flake8_junit_report
 
-      - run:
-          name: Run tests & lint
-          command: |
-            python3 -m venv venv
-            source ./venv/bin/activate
-            pip install -U pip setuptools tox
-            tox -epy35 -- --junitxml=~/.reports/pytest/py35.xml
-            tox -eflake8_ci | flake8_junit flake8.txt ~/.reports/flake8/flake8.xml
+          - save_cache:
+              paths:
+                - ./venv
+              key: v1-dependencies-{{ checksum "src/requirements.txt" }}
 
-      - save_cache:
-          paths:
-            - ./venv
-          key: v1-dependencies-{{ checksum "src/requirements.txt" }}
+  test:
+    docker:
+      - image: circleci/python:3.6
+        steps:
+          - checkout
+          - run: tox -epy35 -- --junitxml=~/test-results/pytest/py35.xml
 
+  lint:
+    docker:
+      - image: circleci/python:3.6
+        steps:
+          - checkout
+          - run: tox -eflake8_ci
+
+  junit:
+    docker:
+      - image: circleci/python:3.6
+        steps:
+          - checkout
+          - run: flake8_junit flake8.txt ~/test-results/flake8/flake8.xml
+
+  close:
       - store_test_results:
-          path: ~/.reports
+          path: ~/test-results
       - store_artifacts:
-          path: ~/.reports
+          path: ~/test-results
+
+workflows:
+  version: 2
+  myworkflow:
+    jobs:
+      - test:
+        requires:
+          - prepare 
+      - lint:
+        requires:
+          - prepare 
+      - junit:
+        requires:
+          - prepare
+          - lint
+      - close:
+        requires:
+          - prepare
+          - test
+          - lint
+          - junit
