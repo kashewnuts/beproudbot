@@ -2,7 +2,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: python:3.5-slim
+      - image: circleci/python:3.5
     steps:
       - checkout
 
@@ -20,9 +20,9 @@ jobs:
       - run:
           name: Run tests & lint
           command: |
+            python3 -m venv venv
+            source ./venv/bin/activate
             pip install -U pip setuptools tox flake8_junit_report
-            # tox -epy35 -- --junitxml=~/test-results/pytest/py35.xml
-            # tox -eflake8_ci |& flake8_junit flake8.txt ~/test-results/flake8/flake8.xml
             tox -epy35,flake8_ci
 
       - save_cache:
