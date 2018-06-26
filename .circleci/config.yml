@@ -18,12 +18,20 @@ jobs:
           - v1-dependencies-
 
       - run:
-          name: Update Python Packages
+          name: Run tests & lint
           command: |
             python3 -m venv venv
             source ./venv/bin/activate
-            pip install -U pip setuptools tox flake8_junit_report
-            tox -epy35,flake8
+            pip install -U pip setuptools tox
+            tox -epy35 -- --junitxml=~/.reports/pytest/py35.xml
+            tox -eflake8_ci
+
+      - run:
+          name: Flake8 junit
+          command: |
+            pip install -U flake8_junit_report
+            source ./venv/bin/activate
+            flake8_junit flake8.txt ~/.reports/flake8/flake8.xml
 
       - save_cache:
           paths:
