@@ -162,7 +162,11 @@ def show_kintai_history_csv(message, time=None):
             if d[0]:
                 workon = d[1]
             else:
+                # workoff = datetime.datetime.strftime(d[1], '%Y-%m-%d %I:%M:%S') + datetime.timedelta(hours=12)
                 workoff = d[1]
+                # print("workoff: {}" % workoff)
+                print("workoff:", end='')
+                print(workoff)
         rows.append([aligin_date, workon, workoff])
 
     output = StringIO()

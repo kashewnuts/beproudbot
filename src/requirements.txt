@@ -12,4 +12,4 @@ python-redmine
 
 geopy
 kml2geojson
-beautifulesoup
+beautifulsoup4
