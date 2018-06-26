@@ -24,14 +24,7 @@ jobs:
             source ./venv/bin/activate
             pip install -U pip setuptools tox
             tox -epy35 -- --junitxml=~/.reports/pytest/py35.xml
-            tox -eflake8_ci
-
-      - run:
-          name: Flake8 junit
-          command: |
-            pip install -U flake8_junit_report
-            source ./venv/bin/activate
-            flake8_junit flake8.txt ~/.reports/flake8/flake8.xml
+            tox -eflake8_ci | flake8_junit flake8.txt ~/.reports/flake8/flake8.xml
 
       - save_cache:
           paths:
@@ -39,6 +32,6 @@ jobs:
           key: v1-dependencies-{{ checksum "src/requirements.txt" }}
 
       - store_test_results:
-          path: test_results
+          path: ~/.reports
       - store_artifacts:
-          path: test_results
+          path: ~/.reports
