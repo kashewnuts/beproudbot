@@ -18,8 +18,8 @@ jobs:
           command: |
             python3 -m venv venv
             source ./venv/bin/activate
-            pip install -U pip setuptools tox flake8_junit_report
-            tox -epy35,flake8
+            pip install -U pip setuptools tox
+            tox -epy35,flake8_ci
 
       - save_cache:
           paths:
