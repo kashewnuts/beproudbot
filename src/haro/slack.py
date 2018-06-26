@@ -2,6 +2,7 @@ import logging
 
 from cachetools.func import ttl_cache
 import slacker
+import beautifulsoup4
 from slackbot import settings
 
 logger = logging.getLogger(__name__)
