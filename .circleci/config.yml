@@ -5,18 +5,12 @@ jobs:
       - image: circleci/python:3.5
     steps:
       - checkout
-
-      # - run:
-      #     name: Prepare reports directories
-      #     command: mkdir -p test-results/{pytest,flake8}
-
       # Download and cache dependencies
       - restore_cache:
           keys:
           - v1-dependencies-{{ checksum "src/requirements.txt" }}
           # fallback to using the latest cache if no exact match is found
           - v1-dependencies-
-
       - run:
           name: Run tests & lint
           command: |
@@ -24,12 +18,10 @@ jobs:
             source ./venv/bin/activate
             pip install -U pip setuptools tox flake8_junit_report
             tox -epy35,flake8_ci
-
       - save_cache:
           paths:
             - ./venv
           key: v1-dependencies-{{ checksum "src/requirements.txt" }}
-
       - store_test_results:
           path: test-results
       - store_artifacts:
