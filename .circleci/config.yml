@@ -3,53 +3,52 @@ jobs:
   prepare:
     docker:
       - image: circleci/python:3.6
-        steps:
-          - checkout
-          - run:
-              name: Prepare reports directories
-              command: mkdir -p ~/test-results/{pytest,flake8}
+    steps:
+      - checkout
+      - run:
+          name: Prepare reports directories
+          command: mkdir -p ~/test-results/{pytest,flake8}
 
-          # Download and cache dependencies
-          - restore_cache:
-              keys:
-              - v1-dependencies-{{ checksum "src/requirements.txt" }}
-              # fallback to using the latest cache if no exact match is found
-              - v1-dependencies-
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+          - v1-dependencies-{{ checksum "src/requirements.txt" }}
+          # fallback to using the latest cache if no exact match is found
+          - v1-dependencies-
 
-          - run: |
-              pip install -U pip setuptools tox flake8_junit_report
+      - run: pip install -U pip setuptools tox flake8_junit_report
 
-          - save_cache:
-              paths:
-                - ./venv
-              key: v1-dependencies-{{ checksum "src/requirements.txt" }}
+      - save_cache:
+          paths:
+            - ./venv
+          key: v1-dependencies-{{ checksum "src/requirements.txt" }}
 
   test:
     docker:
       - image: circleci/python:3.6
-        steps:
-          - checkout
-          - run: tox -epy35 -- --junitxml=~/test-results/pytest/py35.xml
+    steps:
+      - checkout
+      - run: tox -epy35 -- --junitxml=~/test-results/pytest/py35.xml
 
   lint:
     docker:
       - image: circleci/python:3.6
-        steps:
-          - checkout
-          - run: tox -eflake8_ci
+    steps:
+      - checkout
+      - run: tox -eflake8_ci
 
   junit:
     docker:
       - image: circleci/python:3.6
-        steps:
-          - checkout
-          - run: flake8_junit flake8.txt ~/test-results/flake8/flake8.xml
+    steps:
+      - checkout
+      - run: flake8_junit flake8.txt ~/test-results/flake8/flake8.xml
 
-  close:
-      - store_test_results:
-          path: ~/test-results
-      - store_artifacts:
-          path: ~/test-results
+        #   close:
+        #       - store_test_results:
+        #           path: ~/test-results
+        #       - store_artifacts:
+        #           path: ~/test-results
 
 workflows:
   version: 2
@@ -65,9 +64,9 @@ workflows:
         requires:
           - prepare
           - lint
-      - close:
-        requires:
-          - prepare
-          - test
-          - lint
-          - junit
+            #       - close:
+            #         requires:
+            #           - prepare
+            #           - test
+            #           - lint
+            #           - junit
