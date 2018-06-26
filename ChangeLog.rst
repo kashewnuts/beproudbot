@@ -1,5 +1,6 @@
 Unreleased
 ----------
+- CirciCI2.0対応
 
 Release Notes - 2018-04-03
 --------------------------

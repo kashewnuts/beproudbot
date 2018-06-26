@@ -1,0 +1,38 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/python:3.5
+    steps:
+      - checkout
+
+      - run:
+          name: Prepare reports directories
+          command: mkdir -p ~/.reports/{pytest,flake8}
+
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+          - v1-dependencies-{{ checksum "src/requirements.txt" }}
+          # fallback to using the latest cache if no exact match is found
+          - v1-dependencies-
+
+      - run:
+          name: Run tox
+          command: |
+            python3 -m venv venv
+            source ./venv/bin/activate
+            pip install -U pip setuptools tox flake8_junit_report
+            tox -epy35 -- --junitxml=~/.reports/pytest/py35.xml
+            tox -eflake8_ci
+            flake8_junit flake8.txt ~/.reports/flake8/flake8.xml
+
+      - save_cache:
+          paths:
+            - ./venv
+          key: v1-dependencies-{{ checksum "src/requirements.txt" }}
+
+      - store_test_results:
+          path: ~/.reports
+      - store_artifacts:
+          path: ~/.reports
