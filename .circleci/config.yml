@@ -1,6 +1,6 @@
 version: 2
 jobs:
-  prepare:
+  build:
     docker:
       - image: circleci/python:3.6
     steps:
@@ -55,15 +55,15 @@ workflows:
   myworkflow:
     jobs:
       - test:
-        requires:
-          - prepare 
+          requires:
+            - build
       - lint:
-        requires:
-          - prepare 
+          requires:
+            - build
       - junit:
-        requires:
-          - prepare
-          - lint
+          requires:
+            - build
+            - lint
             #       - close:
             #         requires:
             #           - prepare
