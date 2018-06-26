@@ -8,21 +8,20 @@ jobs:
       - run:
           name: Prepare reports directories
           command: mkdir -p ~/test-results/{pytest,flake8}
+
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+          - v1-dependencies-{{ checksum "src/requirements.txt" }}
+          # fallback to using the latest cache if no exact match is found
+          - v1-dependencies-
+
       - run: pip install -U pip setuptools tox flake8_junit_report
 
-        #      # Download and cache dependencies
-        #      - restore_cache:
-        #          keys:
-        #          - v1-dependencies-{{ checksum "src/requirements.txt" }}
-        #          # fallback to using the latest cache if no exact match is found
-        #          - v1-dependencies-
-        #
-        #      - run: pip install -U pip setuptools tox flake8_junit_report
-        #
-        #      - save_cache:
-        #          paths:
-        #            - ./venv
-        #          key: v1-dependencies-{{ checksum "src/requirements.txt" }}
+      - save_cache:
+          paths:
+            - ./venv
+          key: v1-dependencies-{{ checksum "src/requirements.txt" }}
 
   test:
     docker:
@@ -55,6 +54,7 @@ workflows:
   version: 2
   myworkflow:
     jobs:
+      - build
       - test:
           requires:
             - build
