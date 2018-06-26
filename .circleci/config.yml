@@ -6,9 +6,9 @@ jobs:
     steps:
       - checkout
 
-      - run:
-          name: Prepare reports directories
-          command: mkdir -p ~/test-results/{pytest,flake8}
+      # - run:
+      #     name: Prepare reports directories
+      #     command: mkdir -p test-results/{pytest,flake8}
 
       # Download and cache dependencies
       - restore_cache:
@@ -31,6 +31,6 @@ jobs:
           key: v1-dependencies-{{ checksum "src/requirements.txt" }}
 
       - store_test_results:
-          path: ~/test-results
+          path: test-results
       - store_artifacts:
-          path: ~/test-results
+          path: test-results
