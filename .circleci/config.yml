@@ -2,9 +2,10 @@ version: 2
 jobs:
   build:
     docker:
-      - image: circleci/python:3.6
+      - image: circleci/python:3.5
     steps:
       - checkout
+
       - run:
           name: Prepare reports directories
           command: mkdir -p ~/test-results/{pytest,flake8}
@@ -16,76 +17,20 @@ jobs:
           # fallback to using the latest cache if no exact match is found
           - v1-dependencies-
 
-      - run: pip install --user -U pip setuptools tox flake8_junit_report
+      - run:
+          name: Run tests & lint
+          command: |
+            pip install -U --user pip setuptools tox flake8_junit_report
+            # tox -epy35 -- --junitxml=~/test-results/pytest/py35.xml
+            # tox -eflake8_ci |& flake8_junit flake8.txt ~/test-results/flake8/flake8.xml
+            tox -epy35,flake8_ci
 
       - save_cache:
           paths:
             - ./venv
           key: v1-dependencies-{{ checksum "src/requirements.txt" }}
 
-  test:
-    docker:
-      - image: circleci/python:3.6
-    steps:
-      - checkout
-      # Download and cache dependencies
-      - restore_cache:
-          keys:
-          - v1-dependencies-{{ checksum "src/requirements.txt" }}
-          # fallback to using the latest cache if no exact match is found
-          - v1-dependencies-
-      - run: tox -epy35 -- --junitxml=~/test-results/pytest/py35.xml
-
-  lint:
-    docker:
-      - image: circleci/python:3.6
-    steps:
-      - checkout
-      # Download and cache dependencies
-      - restore_cache:
-          keys:
-          - v1-dependencies-{{ checksum "src/requirements.txt" }}
-          # fallback to using the latest cache if no exact match is found
-          - v1-dependencies-
-      - run: tox -eflake8_ci
-
-  junit:
-    docker:
-      - image: circleci/python:3.6
-    steps:
-      - checkout
-      # Download and cache dependencies
-      - restore_cache:
-          keys:
-          - v1-dependencies-{{ checksum "src/requirements.txt" }}
-          # fallback to using the latest cache if no exact match is found
-          - v1-dependencies-
-      - run: flake8_junit flake8.txt ~/test-results/flake8/flake8.xml
-
-        #   close:
-        #       - store_test_results:
-        #           path: ~/test-results
-        #       - store_artifacts:
-        #           path: ~/test-results
-
-workflows:
-  version: 2
-  myworkflow:
-    jobs:
-      - build
-      - test:
-          requires:
-            - build
-      - lint:
-          requires:
-            - build
-      - junit:
-          requires:
-            - build
-            - lint
-            #       - close:
-            #         requires:
-            #           - prepare
-            #           - test
-            #           - lint
-            #           - junit
+      - store_test_results:
+          path: ~/test-results
+      - store_artifacts:
+          path: ~/test-results
